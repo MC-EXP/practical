@@ -1,0 +1,97 @@
+Step:1(client.py)
+import socket
+import os
+
+# Fixed path of your file
+file_path = r"C:\Users\Administrator\Desktop\File T\example.txt"
+
+# Check if file exists
+if not os.path.exists(file_path):
+    print("❌ File does not exist! Check the path.")
+    exit()
+
+# Create TCP socket
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Connect to server
+server_ip = '127.0.0.1'  # Localhost
+server_port = 5001
+client_socket.connect((server_ip, server_port))
+print("✅ Connected to server.")
+
+# Step 1: Send filename
+filename = os.path.basename(file_path)
+client_socket.send(filename.encode())
+
+# Step 2: Wait for server to send "OK"
+server_response = client_socket.recv(1024).decode()
+if server_response == 'OK':
+    # Step 3: Send file content
+    with open(file_path, 'rb') as file:
+        data = file.read(1024)
+        while data:
+            client_socket.send(data)
+            data = file.read(1024)
+
+    print("✅ File sent successfully!")
+else:
+    print("❌ Server did not respond properly.")
+
+# Close connection
+client_socket.close()
+
+
+
+
+
+
+
+
+
+step:2(server.py)
+import socket
+import os
+
+# Create TCP/IP socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Bind to IP and Port
+server_socket.bind(('0.0.0.0', 5001))
+server_socket.listen(1)
+print("✅ Server is listening on port 5001...")
+
+# Accept a client connection
+client_socket, client_address = server_socket.accept()
+print(f"✅ Connection from {client_address} established.")
+
+# Step 1: Receive the filename
+filename = client_socket.recv(1024).decode()
+print(f"📥 Receiving file: {filename}")
+
+# Step 2: Tell client "OK" to start sending data
+client_socket.send(b'OK')
+
+# Step 3: Receive file content
+save_path = os.path.join(os.getcwd(), f"received_{filename}")
+with open(save_path, 'wb') as file:
+    while True:
+        data = client_socket.recv(1024)
+        if not data:
+            break
+        file.write(data)
+
+print(f"✅ File received successfully and saved as: {save_path}")
+
+# Close connections
+client_socket.close()
+server_socket.close()
+
+
+
+
+
+
+
+example.txt
+Hello, this is a test file for file transfer.
+Sending this using TCP/IP!
