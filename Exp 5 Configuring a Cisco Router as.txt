@@ -1,0 +1,71 @@
+Exp 5: Configuring a Cisco Router as a DHCP Server.
+
+Step 1: Complete Physical Connections
+Use Copper Straight-Through cable for all connections.
+
+Device	Port	Connected Device	Port
+Router	GigabitEthernet0/0	Switch1 (Com_DEPT)	FastEthernet0/1
+Router	GigabitEthernet0/1	Switch2 (ENTC_DEPT)	FastEthernet0/1
+Switch1	FastEthernet0/2	PC0 (Com_DEPT)	FastEthernet0
+Switch1	FastEthernet0/3	Laptop0 (Com_DEPT)	FastEthernet0
+Switch2	FastEthernet0/2	PC1 (ENTC_DEPT)	FastEthernet0
+Switch2	FastEthernet0/3	Laptop1 (ENTC_DEPT)`	FastEthernet0
+
+
+
+
+
+Step 2: Router Interface IP Address Configuration
+From your CLI:
+Router> enable
+Router# configure terminal
+
+Com_DEPT:
+Router(config)# interface gigabitEthernet0/0
+Router(config-if)# ip address 192.168.10.1 255.255.255.0
+Router(config-if)# no shutdown
+
+ENTC_DEPT:
+Router(config)# interface gigabitEthernet0/1
+Router(config-if)# ip address 192.168.20.1 255.255.255.0
+Router(config-if)# no shutdown
+
+
+
+
+Step 3: DHCP Configuration on Router
+Exclude Router’s addresses first:
+Router(config)# ip dhcp excluded-address 192.168.10.1
+Router(config)# ip dhcp excluded-address 192.168.20.1
+Now create pools:
+Com_DEPT DHCP Pool:
+Router(config)# ip dhcp pool Com_DEPT
+Router(dhcp-config)# network 192.168.10.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.10.1
+Router(dhcp-config)# exit
+
+ENTC_DEPT DHCP Pool:
+Router(config)# ip dhcp pool ENTC_DEPT
+Router(dhcp-config)# network 192.168.20.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.20.1
+Router(dhcp-config)# exit
+
+
+
+
+
+Step 4: PC and Laptop DHCP Setup
+For each PC and Laptop:
+1.	Click on PC/Laptop.
+2.	Go to Desktop > IP Configuration.
+3.	Select DHCP.
+The PC will now automatically receive an:
+●	IP Address,
+●	Subnet Mask,
+●	Default Gateway.
+
+Step 5: Verifying DHCP
+On the router:
+Router# show ip dhcp binding
+Router(config)#do show ip interface brief
+
